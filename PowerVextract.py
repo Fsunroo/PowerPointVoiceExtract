@@ -5,7 +5,7 @@ from moviepy.editor import *
 
 POWERLIST= []
 
-
+os.mkdir('voice')
 def sort(path):
 	for file in os.listdir(path):
 		if file[6] == '.':
@@ -42,6 +42,6 @@ for power in POWERLIST:
 		if segment.endswith('.wma'):
 			segments.append(AudioFileClip(os.path.join(segments_path ,segment)))
 	audioClips = concatenate_audioclips([segment for segment in segments])
-	audioClips.write_audiofile(voice_name)
+	audioClips.write_audiofile(os.path.join('voice',voice_name))
 	shutil.rmtree(f'{power}-voice')
 	os.rename(power ,power.replace('.zip', '.pptx'))

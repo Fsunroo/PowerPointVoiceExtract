@@ -1,5 +1,6 @@
 from zipfile import ZipFile
 import os
+import shutil
 from moviepy.editor import *
 
 POWERLIST= []
@@ -42,5 +43,5 @@ for power in POWERLIST:
 			segments.append(AudioFileClip(os.path.join(segments_path ,segment)))
 	audioClips = concatenate_audioclips([segment for segment in segments])
 	audioClips.write_audiofile(voice_name)
-	os.rmdir(f'{power}-voice')
+	shutil.rmtree(f'{power}-voice')
 	os.rename(power ,power.replace('.zip', '.pptx'))

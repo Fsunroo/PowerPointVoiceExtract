@@ -5,7 +5,9 @@ from moviepy.editor import *
 
 POWERLIST= []
 
-os.mkdir('voice')
+if not 'voice' in os.listdir():
+	os.mkdir('voice')
+
 def sort(path):
 	for file in os.listdir(path):
 		if file[6] == '.':
@@ -31,7 +33,7 @@ for file in os.listdir():
 for power in POWERLIST:
 	with ZipFile(power,'r') as zipObj:
 		for content in zipObj.namelist():
-			if content.endswith('.wma'):
+			if content.endswith('.wav') or content.endswith('.wma') or content.endswith('.m4a') or content.endswith('.mp3') or content.endswith('.MP3') or content.endswith('.WAV') or content.endswith('.wav') 	:
 				zipObj.extract(content,f'{power}-voice')
 
 	segments_path= os.path.join(f'{power}-voice','ppt','media')
@@ -39,9 +41,10 @@ for power in POWERLIST:
 	segments = []
 	sort(segments_path)
 	for segment in os.listdir(segments_path) :
-		if segment.endswith('.wma'):
+		if content.endswith('.wav') or content.endswith('.wma') or content.endswith('.m4a') or content.endswith('.mp3') or content.endswith('.MP3') or content.endswith('.WAV') or content.endswith('.wav')  	:
 			segments.append(AudioFileClip(os.path.join(segments_path ,segment)))
 	audioClips = concatenate_audioclips([segment for segment in segments])
 	audioClips.write_audiofile(os.path.join('voice',voice_name))
 	shutil.rmtree(f'{power}-voice')
 	os.rename(power ,power.replace('.zip', '.pptx'))
+	

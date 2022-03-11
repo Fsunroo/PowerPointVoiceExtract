@@ -1,50 +1,57 @@
-from zipfile import ZipFile
 import os
-import shutil
-from moviepy.editor import *
-
-POWERLIST= []
-
-if not 'voice' in os.listdir():
-	os.mkdir('voice')
-
-def sort(path):
-	for file in os.listdir(path):
-		if file[6] == '.':
-			new_file = file[:5]+'0'+file[5:]
-			os.rename(path+'\\'+file,path+'\\'+new_file)
+import zipfile
+from pydub import AudioSegment
+import re
 
 
-
-
-for file in os.listdir():          #convert All files to zip
-	if file.endswith('.ppt'):
-		file=file.replace('.ppt','')
-		os.rename(file+'.ppt',file+'.zip')
-		POWERLIST.append(file+'.zip')
-	if file.endswith('.pptx'):
-		file=file.replace('.pptx','')
-		os.rename(file+'.pptx',file+'.zip')
-		POWERLIST.append(file+'.zip')
-for file in os.listdir():
-	if file.endswith('.zip'):
-		POWERLIST.append(file)
-
-for power in POWERLIST:
-	with ZipFile(power,'r') as zipObj:
-		for content in zipObj.namelist():
-			if content.endswith('.wav') or content.endswith('.wma') or content.endswith('.m4a') or content.endswith('.mp3') or content.endswith('.MP3') or content.endswith('.WAV') or content.endswith('.wav') 	:
-				zipObj.extract(content,f'{power}-voice')
-
-	segments_path= os.path.join(f'{power}-voice','ppt','media')
-	voice_name = power.replace('.zip','.mp3')
-	segments = []
-	sort(segments_path)
-	for segment in os.listdir(segments_path) :
-		if content.endswith('.wav') or content.endswith('.wma') or content.endswith('.m4a') or content.endswith('.mp3') or content.endswith('.MP3') or content.endswith('.WAV') or content.endswith('.wav')  	:
-			segments.append(AudioFileClip(os.path.join(segments_path ,segment)))
-	audioClips = concatenate_audioclips([segment for segment in segments])
-	audioClips.write_audiofile(os.path.join('voice',voice_name))
-	shutil.rmtree(f'{power}-voice')
-	os.rename(power ,power.replace('.zip', '.pptx'))
+class VoiceExtract:
+	def __init__(self, file):
+		self.file = file
+		self.file_name = os.path.basename(self.file)
+		self.file_name_no_ext = os.path.splitext(self.file_name)[0]
+		self.file_ext = os.path.splitext(self.file_name)[1]
+		self.file_path = os.path.dirname(self.file)
+		self.supported_ext = ['.ppt', '.pptx', '.zip']
+		self.audio_ext = ['.wav', '.mp3','aiff', '.aif', '.aifc', '.aiff', '.au', '.flac', '.m4a', '.mp4', '.m4b', '.m4p', '.mpc', '.oga', '.ogg', '.opus', '.ra', '.ram', '.wma', '.wv', '.webm']
+		self.extract_zip()
+		self.merge_audio()
+		self.clear()
 	
+	def extract_zip(self):
+		if self.file_ext in self.supported_ext:
+			with zipfile.ZipFile(self.file, 'r') as zip_ref:
+				zip_ref.extractall('output')
+				zip_ref.close()
+		else:
+			raise Exception('File extension not supported')
+
+	def sortaudiolist(self,audiolist):
+		return sorted(audiolist, key=lambda x: int(re.sub('\D','',x)))
+
+	def get_audio_files(self):
+		audio_files = []
+		for root, _, files in os.walk('output'):
+			for file in files:
+				if os.path.splitext(file)[1] in self.audio_ext:
+					audio_files.append(os.path.join(root, file))
+		return audio_files
+
+	def merge_audio(self):
+		audio_files = self.get_audio_files()
+		audio_files = self.sortaudiolist(audio_files)
+		if len(audio_files) > 1:
+			print('Merging audio files')
+			merged_audio = AudioSegment.from_file(audio_files[0])
+			for audio_file in audio_files[1:]:
+				merged_audio += AudioSegment.from_file(audio_file)
+			merged_audio.export('test.mp3', format='mp3')
+		else:
+			raise Exception('No audio files found')
+
+	def clear(self):
+		print('Cleaning up')
+		os.rmdir('output')
+
+if __name__ == '__main__':
+	file = 'test.pptx'
+	VoiceExtract(file)

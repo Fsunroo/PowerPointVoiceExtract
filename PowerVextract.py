@@ -2,7 +2,7 @@ import os
 import zipfile
 from pydub import AudioSegment
 import re
-
+import shutil
 
 class VoiceExtract:
 	def __init__(self, file):
@@ -11,6 +11,8 @@ class VoiceExtract:
 		self.file_name_no_ext = os.path.splitext(self.file_name)[0]
 		self.file_ext = os.path.splitext(self.file_name)[1]
 		self.file_path = os.path.dirname(self.file)
+		self.dir = file.split('/')[-2]
+		print(self.dir)
 		self.supported_ext = ['.ppt', '.pptx', '.zip']
 		self.audio_ext = ['.wav', '.mp3','aiff', '.aif', '.aifc', '.aiff', '.au', '.flac', '.m4a', '.mp4', '.m4b', '.m4p', '.mpc', '.oga', '.ogg', '.opus', '.ra', '.ram', '.wma', '.wv', '.webm']
 		self.extract_zip()
@@ -20,7 +22,7 @@ class VoiceExtract:
 	def extract_zip(self):
 		if self.file_ext in self.supported_ext:
 			with zipfile.ZipFile(self.file, 'r') as zip_ref:
-				zip_ref.extractall('output')
+				zip_ref.extractall(os.path.join(self.dir,'output'))
 				zip_ref.close()
 		else:
 			raise Exception('File extension not supported')
@@ -30,7 +32,7 @@ class VoiceExtract:
 
 	def get_audio_files(self):
 		audio_files = []
-		for root, _, files in os.walk('output'):
+		for root, _, files in os.walk(os.path.join(self.dir,'output')):
 			for file in files:
 				if os.path.splitext(file)[1] in self.audio_ext:
 					audio_files.append(os.path.join(root, file))
@@ -42,16 +44,17 @@ class VoiceExtract:
 		if len(audio_files) > 1:
 			print('Merging audio files')
 			merged_audio = AudioSegment.from_file(audio_files[0])
+			print(len(audio_files))
 			for audio_file in audio_files[1:]:
+				print(audio_file)
 				merged_audio += AudioSegment.from_file(audio_file)
-				merged_audio.export('test.mp3', format='mp3')
-				merged_audio = AudioSegment.from_file('test.mp3')
+			merged_audio.export(os.path.join(self.dir,'final.mp3'), format='mp3')
 		else:
 			raise Exception('No audio files found')
 
 	def clear(self):
 		print('Cleaning up')
-		os.rmdir('output')
+		shutil.rmtree(os.path.join(self.dir,'output'))
 
 if __name__ == '__main__':
 	file = 'file.pptx'

@@ -15,10 +15,13 @@ def start(message):
 
 @bot.message_handler(content_types=['document'])
 def extractvoice(message):
+    print('extractvoice')
     bot.reply_to(message, 'downloading...')
     file_info = bot.get_file(message.document.file_id)
-    downloaded_file = bot.download_file(file_info.file_path)
-    PowerVextract.VoiceExtract(downloaded_file)
+    bot.send_message(message.chat.id, file_info)
+    file_info.download('file.pptx')
+    print('extracting...')
+    PowerVextract.VoiceExtract('file.pptx')
     bot.reply_to(message, 'done!')
     bot.send_media_group(message.chat.id, ['media.mp3'])
 

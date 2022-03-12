@@ -44,7 +44,8 @@ class VoiceExtract:
 			merged_audio = AudioSegment.from_file(audio_files[0])
 			for audio_file in audio_files[1:]:
 				merged_audio += AudioSegment.from_file(audio_file)
-			merged_audio.export('test.mp3', format='mp3')
+				merged_audio.export('test.mp3', format='mp3')
+				merged_audio = AudioSegment.from_file('test.mp3')
 		else:
 			raise Exception('No audio files found')
 
@@ -53,5 +54,5 @@ class VoiceExtract:
 		os.rmdir('output')
 
 if __name__ == '__main__':
-	file = 'test.pptx'
+	file = 'file.pptx'
 	VoiceExtract(file)
